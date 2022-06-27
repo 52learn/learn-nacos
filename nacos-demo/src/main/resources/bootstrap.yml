@@ -1,0 +1,19 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: greet-app
+  cloud:
+    nacos:
+      config:
+        namespace: local
+        server-addr: 192.168.33.10:8848
+        file-extension: yaml
+      discovery:
+        namespace: local
+        server-addr: 192.168.33.10:8848
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
