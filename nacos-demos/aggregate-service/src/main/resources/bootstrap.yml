@@ -1,0 +1,38 @@
+
+spring:
+  application:
+    name: aggregate-service
+  cloud:
+    nacos:
+      config:
+        namespace: test
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+        #refresh-enabled: false
+        #enabled: false
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: test
+        weight: 1
+        clusterName: service
+        metadata:
+          level: 0
+        ip-delete-timeout: 30
+        heart-beat-interval: 5
+        heart-beat-timeout: 15
+
+ribbon:
+  nacos:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 8888
