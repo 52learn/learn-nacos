@@ -1,7 +1,7 @@
 package com.study.nacos.loadbalance.rule.autoconfiguration;
 
 import com.netflix.loadbalancer.IRule;
-import com.study.nacos.loadbalance.rule.BackendFeignRouteRule;
+import com.study.nacos.loadbalance.rule.FeignLocalRouteRule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -10,24 +10,23 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+
 /**
- * 注意： 不能同{@link FrontEndSpecialRuleAutoConfiguration} 同时在spring.factories配置使用
+ * 注意： 不能同{@link FrontEndSpecialRouteRuleAutoConfiguration} 同时在spring.factories配置使用
  * 使用说明：
  * IDEA启动命令行中
  */
 @Configuration
-
 @AutoConfigureAfter({ServletWebServerFactoryAutoConfiguration.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name = "feign.route",havingValue = "local")
-public class BackendFeignRouteRuleAutoConfiguration {
+public class FeignLocalRouteRuleAutoConfiguration {
     @Value("${server.port}")
     private int serverPort;
 
     @Bean
     @ConditionalOnMissingBean
-    public IRule localProfileRule(){
-        return new BackendFeignRouteRule(serverPort);
+    public IRule feignLocalRouteRule(){
+        return new FeignLocalRouteRule(serverPort);
     }
 }

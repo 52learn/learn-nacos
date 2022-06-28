@@ -5,15 +5,15 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ZoneAvoidanceRule;
 
 /**
- * 前端可通过添加header头，实现指定后端feignClient调用本地服务（而不通过注册中心服务列表通过负载均衡随机服务）。如：请求头request=local
+ * 前端可通过添加header头，实现指定后端feignClient调用本地服务（而不通过注册中心服务列表通过负载均衡随机服务）
  */
-public class FrontEndSpecialRule extends ZoneAvoidanceRule {
+public class FrontEndSpecialRouteRule extends ZoneAvoidanceRule {
     private int serverPort;
 
-    public FrontEndSpecialRule() {
+    public FrontEndSpecialRouteRule() {
     }
 
-    public FrontEndSpecialRule(int serverPort) {
+    public FrontEndSpecialRouteRule(int serverPort) {
         this.serverPort = serverPort;
     }
 

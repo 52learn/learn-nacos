@@ -1,3 +1,10 @@
+# Running Environment
+## start nacos server
+use : https://github.com/52learn/local-vagrant/blob/master/boxes/centos7/nacos/nacos-docker-1.4.1/example/standalone-mysql-5.7.yaml  
+```
+docker-compose -f example/standalone-mysql-5.7.yaml up -d
+```
+
 # Feature List
 ## Dynamic Modifying Configuration Without restart application
 ### com.study.nacos.demo.DynamicConfigurationWithRefreshScopeController
@@ -26,6 +33,40 @@ com.alibaba.cloud.nacos.refresh.NacosContextRefresher.registerNacosListener
 ## Configuration Change Listener
 com.study.nacos.demo.listener.ConfigChangedEventListener  
 
+## feign route to localhost service
+1. spring.factories configuration 
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.study.nacos.loadbalance.rule.autoconfiguration.FeignLocalRouteRuleAutoConfiguration
+```
+
+2. start application with VM options:
+```
+-Dfeign.route=local
+```
+3. visit the link
+http://127.0.0.1:8080/api/say
+
+## feign route rule by front end special 
+1. spring.factories configuration  
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.study.nacos.loadbalance.rule.autoconfiguration.FrontEndSpecialRouteRuleAutoConfiguration
+```
+2. curl 
+```
+curl http://127.0.0.1:8080/api/say -H "route:local"
+```
+
+Use Case:  
+1. 在服务应用层面，只需要让前端请求头上带上route=环境标识，可以为同一类提供多套环境，比如：为开发环境提供dev-a,dev-b,dev-c 等多套开发环境；减少部署多套的成本  
+
+
+## Provide the default Server when ribbon can not choose one  
+com.study.nacos.loadbalance.rule.MyZoneAvoidanceRule
+
+## NacosRule
+com.alibaba.cloud.nacos.ribbon.NacosRule
 
 ### Reference 
 1. Environment Changes  

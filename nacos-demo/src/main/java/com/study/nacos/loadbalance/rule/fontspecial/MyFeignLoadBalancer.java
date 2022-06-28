@@ -19,7 +19,7 @@ public class MyFeignLoadBalancer  extends FeignLoadBalancer {
     @Override
     protected void customizeLoadBalancerCommandBuilder(RibbonRequest request, IClientConfig config, LoadBalancerCommand.Builder<RibbonResponse> builder) {
         Map<String, Collection<String>> headers = request.getRequest().headers();
-        Optional.ofNullable(headers.get("request")).ifPresent(new Consumer<Collection<String>>() {
+        Optional.ofNullable(headers.get("route")).ifPresent(new Consumer<Collection<String>>() {
             @Override
             public void accept(Collection<String> strings) {
                 String value = strings.stream().findFirst().orElse(null);

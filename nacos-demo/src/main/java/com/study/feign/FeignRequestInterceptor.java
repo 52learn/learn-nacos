@@ -1,4 +1,4 @@
-package com.study.nacos.loadbalance.rule.fontspecial;
+package com.study.feign;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -14,7 +14,7 @@ import java.util.Enumeration;
  * @description
  * @revision
  */
-public class FeignRequestTokenInterceptor implements RequestInterceptor {
+public class FeignRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {

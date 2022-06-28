@@ -4,11 +4,14 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ZoneAvoidanceRule;
 
-public class BackendFeignRouteRule extends ZoneAvoidanceRule {
+/**
+ * Feign Route to localhost (127.0.0.1)
+ */
+public class FeignLocalRouteRule extends ZoneAvoidanceRule {
     private int serverPort;
-    public BackendFeignRouteRule(){
+    public FeignLocalRouteRule(){
     }
-    public BackendFeignRouteRule(int serverPort){
+    public FeignLocalRouteRule(int serverPort){
         this.serverPort = serverPort;
     }
     @Override

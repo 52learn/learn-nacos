@@ -1,4 +1,3 @@
-# com.study.nacos.loadbalance.rule.autoconfiguration.BackendFeignRouteRuleAutoConfiguration,\
-#com.study.nacos.loadbalance.rule.autoconfiguration.FrontEndSpecialRuleAutoConfiguration
+#com.study.nacos.loadbalance.rule.autoconfiguration.FeignLocalRouteRuleAutoConfiguration
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.study.nacos.loadbalance.rule.autoconfiguration.BackendFeignRouteRuleAutoConfiguration
+com.study.nacos.loadbalance.rule.autoconfiguration.FrontEndSpecialRouteRuleAutoConfiguration
