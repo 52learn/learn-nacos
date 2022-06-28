@@ -4,13 +4,13 @@ spring:
   cloud:
     nacos:
       config:
-        namespace: test
-        server-addr: 127.0.0.1:8848
+        namespace: local
+        server-addr: 192.168.33.10:8848
         file-extension: yaml
         #refresh-enabled: false
       discovery:
-        server-addr: 127.0.0.1:8848
-        namespace: test
+        server-addr: 192.168.33.10:8848
+        namespace: local
         weight: 1
         clusterName: hangzhou
         metadata:

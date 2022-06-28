@@ -6,12 +6,12 @@ spring:
     nacos:
       config:
         namespace: test
-        server-addr: 127.0.0.1:8848
+        server-addr: 192.168.33.10:8848
         file-extension: yaml
         #refresh-enabled: false
         #enabled: false
       discovery:
-        server-addr: 127.0.0.1:8848
+        server-addr: 192.168.33.10:8848
         namespace: test
         weight: 1
         clusterName: service

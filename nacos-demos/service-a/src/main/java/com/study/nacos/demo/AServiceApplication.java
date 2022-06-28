@@ -34,7 +34,6 @@ import java.util.Optional;
 //@EnableFeignClients
 @SpringBootApplication
 //@EnableDiscoveryClient
-@EnableConfigurationProperties(value = AServiceProperties.class)
 public class AServiceApplication implements CommandLineRunner , EnvironmentAware {
 
 
@@ -45,38 +44,15 @@ public class AServiceApplication implements CommandLineRunner , EnvironmentAware
     private Integer weight;
 
 
-
-
-    @Autowired
-    private NacosDiscoveryProperties nacosDiscoveryProperties;
-    @Autowired
-    private MyPropertiesComponent myPropertiesComponent;
-
     Environment environment;
 
-    @Autowired
-    private AServiceProperties aServiceProperties;
     public static void main(String[] args) {
         SpringApplication.run(AServiceApplication.class, args);
     }
 
     @Override
     public void run(String... args) throws Exception {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true){
-                    try {
-                        Thread.sleep(200000000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("fetch by @Value in @Component .....aliyunSmsUrl: "+myPropertiesComponent.getAliyunSmsUrl());
-                    System.out.println("fetch by @ConfigurationProperties.....aliyunSmsUrl: "+aServiceProperties.getUrl());
-                    System.out.println("fetch from environment aliyunSmsUrl: "+environment.getProperty("aliyun.sms.url"));
-                }
-            }
-        }).start();
+
     }
 
     @Override
