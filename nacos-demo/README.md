@@ -4,6 +4,15 @@ use : https://github.com/52learn/local-vagrant/blob/master/boxes/centos7/nacos/n
 ```
 docker-compose -f example/standalone-mysql-5.7.yaml up -d
 ```
+## configuration
+greet-app.yaml:  
+```
+test: 12345
+user:
+  name: kim
+  address: hangzhou
+```
+
 
 # Feature List
 ## Dynamic Modifying Configuration Without restart application
