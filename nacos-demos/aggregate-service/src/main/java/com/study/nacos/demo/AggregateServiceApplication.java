@@ -1,27 +1,22 @@
 package com.study.nacos.demo;
 
 import com.alibaba.cloud.nacos.ribbon.NacosRule;
-import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
+import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.IRule;
+import com.netflix.loadbalancer.PollingServerListUpdater;
+import com.netflix.loadbalancer.ServerListUpdater;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerRequest;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.Map;
 
 //@EnableFeignClients
@@ -90,20 +85,25 @@ public class AggregateServiceApplication implements CommandLineRunner  {
     }
 
     /**
-     集群优先和权重负载均衡规则
+     集群优先和权重负载均衡规则（全局配置）
      **/
     //@Bean
     IRule iRule(){
-
         return new NacosRule();
     }
 
     /**
-     * 服务分层调用测试
+     * 服务分层调用测试（全局配置）
      * @return
      */
-    @Bean
+    //@Bean
     IRule levelInvokeNacosRule(){
         return new LevelInvokeNacosRule();
+    }
+
+
+    @Bean
+    public ServerListUpdater ribbonServerListUpdater(IClientConfig config) {
+        return new PollingServerListUpdater(config);
     }
 }

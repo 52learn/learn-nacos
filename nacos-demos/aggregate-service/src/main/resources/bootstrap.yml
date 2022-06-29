@@ -5,21 +5,25 @@ spring:
   cloud:
     nacos:
       config:
-        namespace: test
+        namespace: local
         server-addr: 192.168.33.10:8848
         file-extension: yaml
         #refresh-enabled: false
         #enabled: false
       discovery:
         server-addr: 192.168.33.10:8848
-        namespace: test
+        namespace: local
         weight: 1
-        clusterName: service
+        clusterName: hangzhou
         metadata:
           level: 0
         ip-delete-timeout: 30
         heart-beat-interval: 5
         heart-beat-timeout: 15
+
+#service-a:
+#  ribbon:
+#    NFLoadBalancerRuleClassName: com.study.nacos.demo.ClusterAwareWeightedNacosRule
 
 ribbon:
   nacos:

@@ -4,9 +4,9 @@
 
 - 对service-a 打包
 - 启动service-a ,分别设置不同的权重值, 如下：请求6次，通过端口区分对应实例
-    - java  -Dspring.cloud.nacos.discovery.weight=100 -jar target/service-a-0.0.1-SNAPSHOT.jar 
-    - java  -Dspring.cloud.nacos.discovery.weight=10 -jar target/service-a-0.0.1-SNAPSHOT.jar 
-    - java  -Dspring.cloud.nacos.discovery.weight=5 -jar target/service-a-0.0.1-SNAPSHOT.jar
+    - java  -Dspring.cloud.nacos.discovery.weight=100 -Dserver.port=0 -jar target/service-a-0.0.1-SNAPSHOT.jar 
+    - java  -Dspring.cloud.nacos.discovery.weight=10 -Dserver.port=0 -jar target/service-a-0.0.1-SNAPSHOT.jar 
+    - java  -Dspring.cloud.nacos.discovery.weight=5 -Dserver.port=0 -jar target/service-a-0.0.1-SNAPSHOT.jar
 - 调用服务aggregate-service需要使用NacosRule负责均衡规则:
 ```
 @Bean
@@ -35,11 +35,16 @@
 
 - 对service-a 打包
 - 启动service-a ,分别设置不同clusterName
-    - java -Dspring.cloud.nacos.discovery.clusterName=hangzhou -jar target/service-a-0.0.1-SNAPSHOT.jar
-    - java -Dspring.cloud.nacos.discovery.clusterName=hangzhou -jar target/service-a-0.0.1-SNAPSHOT.jar
-    - java -Dspring.cloud.nacos.discovery.clusterName=shanghai -jar target/service-a-0.0.1-SNAPSHOT.jar
+    - java -Dspring.cloud.nacos.discovery.clusterName=hangzhou -Dserver.port=0 -jar target/service-a-0.0.1-SNAPSHOT.jar
+    - java -Dspring.cloud.nacos.discovery.clusterName=hangzhou -Dserver.port=0 -jar target/service-a-0.0.1-SNAPSHOT.jar
+    - java -Dspring.cloud.nacos.discovery.clusterName=shanghai -Dserver.port=0 -jar target/service-a-0.0.1-SNAPSHOT.jar
 - 调用服务aggregate-service的spring.cloud.nacos.discovery.clusterName设置为hangzhou
-- 启动aggregate-service服务，访问：http://127.0.0.1:8888/test/clusterName , hangzhou的服务响应返回(与调用服务的clusterName一致))。
+- 配置aggregate-service的 spring.factories文件：
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.study.nacos.autoconfiguration.ClusterAwareWeightedRibbonAutoConfiguration
+```
+- 启动aggregate-service服务，访问：http://127.0.0.1:8888/test/clusterName , hangzhou的服务响应返回(与调用服务的clusterName一致))：
 ```
 {"port":"64195","clusterName":"hangzhou","applicationName":"service-a"}
 ```
@@ -62,20 +67,32 @@
 
 - 
 
-    
-
-3.参考
-
+3.参考  
 http://www.itmuch.com/spring-cloud-alibaba/ribbon-nacos-weight-cluster/
 
 
 
 ## 标签路由测试
+描述：通过定义metadata，然后采用基于元数据的路由算法规则实现路由算法  
+
+具体实现类似：com.study.nacos.demo.LevelInvokeNacosRule  
+
+
+若service-a服务有三个不同版本的实例，其中tag=master为主线版本代码打包启动的服务，而tag=v1.2,tag=v2分别为v1.2、v2版本代码打包启动的服务
+启动如下： 
+```
+java -Dspring.cloud.nacos.discovery.metadata.tag=master -jar target/service-a-0.0.1-SNAPSHOT.jar
+java -Dspring.cloud.nacos.discovery.metadata.tag=v1.2 -jar target/service-a-0.0.1-SNAPSHOT.jar
+java -Dspring.cloud.nacos.discovery.metadata.tag=v2 -jar target/service-a-0.0.1-SNAPSHOT.jar  
+
+```
+当调用方需要调用与调用方tag一致的服务，比如：tag=v2，则：  
+```
+java -Dspring.cloud.nacos.discovery.metadata.tag=v2 -jar target/aggregate-service-0.0.1-SNAPSHOT.jar  
+```
+
 
 1.测试步骤
-
-
-
 
 
 2.使用场景
@@ -85,7 +102,8 @@ http://www.itmuch.com/spring-cloud-alibaba/ribbon-nacos-weight-cluster/
   存在多个迭代分支同时开发的情况，需要分别为每个迭代开发提供一套开发环境。比如：feature-1，feature-2，feature-3 三个分支同时开发，我们需要提供dev-a,dev-b,dev-c 环境，三个环境间的服务是互相隔离的，每个环境只能访问内部的服务。
 
 
-
+3. 参考：  
+https://www.alibabacloud.com/help/en/enterprise-distributed-application-service/latest/configure-tag-based-routing-for-a-spring-cloud-application
 
 
 ## 服务分层调用测试
@@ -102,76 +120,12 @@ http://www.itmuch.com/spring-cloud-alibaba/ribbon-nacos-weight-cluster/
 
 - 设置aggregate-service的spring.cloud.nacos.discovery.metadata.level为0
 
-- 调用方增加服务分层调用负载均衡规则：LevelInvokeNacosRule
-
+- 配置aggregate-service的 spring.factories文件：
 ```
-/**
- * 服务分层调用负载均衡规则:
- * 根据实例的metadata中level值，level值越小越靠上层，上层能调用下层，同层之间可以互调，但下层不能调用上层服务
- */
-public class LevelInvokeNacosRule extends AbstractLoadBalancerRule {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LevelInvokeNacosRule.class);
-
-    @Autowired
-    private NacosDiscoveryProperties nacosDiscoveryProperties;
-    @Override
-    public Server choose(Object key) {
-        try {
-            DynamicServerListLoadBalancer loadBalancer = (DynamicServerListLoadBalancer) getLoadBalancer();
-            String name = loadBalancer.getName();
-
-            NamingService namingService = nacosDiscoveryProperties
-                .namingServiceInstance();
-            List<Instance> instances = namingService.selectInstances(name, true);
-            if (CollectionUtils.isEmpty(instances)) {
-                LOGGER.warn("no instance in service {}", name);
-                return null;
-            }
-            String levelStr = nacosDiscoveryProperties.getMetadata().get("level");
-            Integer selfLevel = StringUtils.isEmpty(levelStr) ? 0:Integer.parseInt(levelStr);
-            List<Instance> filterdInstances = instances.stream()
-                .filter(instance -> {
-                    String instanceLevelStr = instance.getMetadata().get("level");
-                    Integer instanceLevel = StringUtils.isEmpty(instanceLevelStr) ? 0:Integer.parseInt(instanceLevelStr);
-                    return selfLevel <= instanceLevel;
-                })
-                .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(filterdInstances)){
-                LOGGER.warn("lower level service can not invoke higher level service , current service level: {},target Service Name: {}", selfLevel,name);
-                return null;
-            }
-            Instance instance = ExtendBalancer.getHostByRandomWeight2(filterdInstances);
-            return new NacosServer(instance);
-        }
-        catch (Exception e) {
-            LOGGER.warn("NacosRule error", e);
-            return null;
-        }
-    }
-
-    @Override
-    public void initWithNiwsConfig(IClientConfig clientConfig) {
-
-    }
-
-}
-
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.study.nacos.autoconfiguration.LevelInvokeNacosRuleRibbonAutoConfiguration
 ```
-
-自定义规则bean：
-
-```
-/**
-     * 服务分层调用测试
-     * @return
-     */
-    @Bean
-    IRule levelInvokeNacosRule(){
-        return new LevelInvokeNacosRule();
-    }
-```
-
-
+   
 
 - 启动aggregate-service，访问：http://127.0.0.1:8888/test/levelInvoke ，虽然上面启动了service-a两个实例，但每次只能访问到level为2的实例。
 
@@ -217,16 +171,21 @@ public class LevelInvokeNacosRule extends AbstractLoadBalancerRule {
 - 打开nacos管理后台页面，点击服务列表菜单，确保serice-a有2个服务实例和aggregate-service有1个服务实例
 - 访问链接：http://127.0.0.1:8888/user ，观察service-a的两个控制台趋向均衡的打印输出日志。
 - 选择service-a的其中一个服务实例，在Operation操作栏中点击Offline按钮下线。
-- 观察aggregate-service服务控制台，接收到udp报文(多次测试发现，跟下线操作几乎是实时同步接收的)：
+- 观察aggregate-service服务控制台，几乎与点击下线操作同时接收到udp报文：
 ```
 2021-02-04 10:36:28.222  INFO 22684 --- [g.push.receiver] com.alibaba.nacos.client.naming          : received push data: {"type":"dom","data":"{\"hosts\":[{\"ip\":\"192.168.99.1\",\"port\":64865,\"valid\":true,\"healthy\":true,\"marked\":false,\"instanceId\":\"192.168.99.1#64865#hangzhou#DEFAULT_GROUP@@service-a\",\"metadata\":{\"preserved.heart.beat.timeout\":\"15\",\"preserved.ip.delete.timeout\":\"30\",\"preserved.register.source\":\"SPRING_CLOUD\",\"level\":\"1\",\"preserved.heart.beat.interval\":\"5\"},\"enabled\":true,\"weight\":1.0,\"clusterName\":\"hangzhou\",\"serviceName\":\"DEFAULT_GROUP@@service-a\",\"ephemeral\":true}],\"dom\":\"DEFAULT_GROUP@@service-a\",\"name\":\"DEFAULT_GROUP@@service-a\",\"cacheMillis\":10000,\"lastRefTime\":1612406188206,\"checksum\":\"b216366d3c451ebd72e3218358d85b52\",\"useSpecifiedURL\":false,\"clusters\":\"\",\"env\":\"\",\"metadata\":{}}","lastRefTime":243318313484300} from /172.25.176.1
 2021-02-04 10:36:28.239  INFO 22684 --- [g.push.receiver] com.alibaba.nacos.client.naming          : removed ips(1) service: DEFAULT_GROUP@@service-a -> [{"instanceId":"192.168.99.1#64887#hangzhou#DEFAULT_GROUP@@service-a","ip":"192.168.99.1","port":64887,"weight":1.0,"healthy":true,"enabled":true,"ephemeral":true,"clusterName":"hangzhou","serviceName":"DEFAULT_GROUP@@service-a","metadata":{"preserved.heart.beat.timeout":"15","preserved.ip.delete.timeout":"30","preserved.register.source":"SPRING_CLOUD","level":"1","preserved.heart.beat.interval":"5"},"instanceHeartBeatTimeOut":15,"instanceHeartBeatInterval":5,"ipDeleteTimeout":30}]
 2021-02-04 10:36:28.246  INFO 22684 --- [g.push.receiver] com.alibaba.nacos.client.naming          : current ips:(1) service: DEFAULT_GROUP@@service-a -> [{"instanceId":"192.168.99.1#64865#hangzhou#DEFAULT_GROUP@@service-a","ip":"192.168.99.1","port":64865,"weight":1.0,"healthy":true,"enabled":true,"ephemeral":true,"clusterName":"hangzhou","serviceName":"DEFAULT_GROUP@@service-a","metadata":{"preserved.heart.beat.timeout":"15","preserved.ip.delete.timeout":"30","preserved.register.source":"SPRING_CLOUD","level":"1","preserved.heart.beat.interval":"5"},"instanceHeartBeatTimeOut":15,"instanceHeartBeatInterval":5,"ipDeleteTimeout":30}]
 
 ```
-- 立马访问链接：http://127.0.0.1:8888/user ，发现已经全部路由到在线的service-a服务实例上了。
+- 立马访问链接：http://127.0.0.1:8888/user ，发现负载均衡返回实例还包含了已经下线的实例，即没有立马被摘除,需要过一定时间。其原理详见：  
+Nacos questioned why my service is still available when it is clearly offline?  
+https://blog.fearcat.in/a?ID=00001-841dc12b-46c9-43d2-8acb-8f142b598ae2
 
-2. 使用场景
+2.如何实现通过nacos控制台上下线服务后立马让调用方感知到？
+
+
+3.使用场景
 当需要对注册到Nacos注册中心的web服务进行重启升级，那么需要及时通知该web服务的上游调用者其下线了，通过在nacos管理控制台页面的下线操作按钮，就可以将指定的web实例通过UDP报文发送给所有监听器。
 
 

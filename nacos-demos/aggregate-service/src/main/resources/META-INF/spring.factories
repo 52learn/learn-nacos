@@ -1,0 +1,3 @@
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#com.study.nacos.autoconfiguration.ClusterAwareWeightedRibbonAutoConfiguration
+#com.study.nacos.autoconfiguration.LevelInvokeNacosRuleRibbonAutoConfiguration
