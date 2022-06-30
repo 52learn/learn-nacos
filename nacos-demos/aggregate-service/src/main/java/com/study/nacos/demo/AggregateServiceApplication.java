@@ -1,10 +1,7 @@
 package com.study.nacos.demo;
 
 import com.alibaba.cloud.nacos.ribbon.NacosRule;
-import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.IRule;
-import com.netflix.loadbalancer.PollingServerListUpdater;
-import com.netflix.loadbalancer.ServerListUpdater;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -101,9 +98,4 @@ public class AggregateServiceApplication implements CommandLineRunner  {
         return new LevelInvokeNacosRule();
     }
 
-
-    @Bean
-    public ServerListUpdater ribbonServerListUpdater(IClientConfig config) {
-        return new PollingServerListUpdater(config);
-    }
 }

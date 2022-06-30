@@ -183,6 +183,21 @@ Nacos questioned why my service is still available when it is clearly offline?
 https://blog.fearcat.in/a?ID=00001-841dc12b-46c9-43d2-8acb-8f142b598ae2
 
 2.如何实现通过nacos控制台上下线服务后立马让调用方感知到？
+配置文件中添加：
+```
+#service-a客户端负载均衡器的服务端列表刷新间隔时间设置
+service-a:
+  ribbon:
+    ServerListRefreshInterval: 2000
+```
+```
+#所有服务的客户端负载均衡器的服务端列表刷新间隔时间设置
+ribbon:
+  ServerListRefreshInterval: 2000
+```
+
+相关源码：  
+- com.netflix.loadbalancer.PollingServerListUpdater  
 
 
 3.使用场景

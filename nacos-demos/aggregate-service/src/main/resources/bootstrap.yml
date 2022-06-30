@@ -21,13 +21,18 @@ spring:
         heart-beat-interval: 5
         heart-beat-timeout: 15
 
+
 #service-a:
+#  ribbon:
+#    ServerListRefreshInterval: 2000
 #  ribbon:
 #    NFLoadBalancerRuleClassName: com.study.nacos.demo.ClusterAwareWeightedNacosRule
 
 ribbon:
   nacos:
     enabled: true
+  #所有服务的客户端负载均衡器的服务端列表刷新间隔时间设置
+  ServerListRefreshInterval: 2000
 
 management:
   endpoints:
